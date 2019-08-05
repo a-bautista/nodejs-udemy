@@ -1,0 +1,16 @@
+### How to run the web app?
+
+### You need to execute the command `npm run start`
+
+### How do you create your package.json?
+
+### You need to install npm and then you type `npm init`
+
+### You need to install the dependencies from the package.json with npm install <name_of_package>
+
+### How to run the file with nodemon?
+
+### `nodemon` is a package that allows us to listen to all changes that occur in our files. To install nodemon you type
+### `npm install --save-dev` and once you have installed it you run it with `npm run start`. 
+
+hablar con Alberto, cómo me preparo para mantener a mi familia
