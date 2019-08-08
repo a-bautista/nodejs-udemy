@@ -3,13 +3,15 @@ const server = require('http').createServer();
 
 server.on('request', (req, res) => {
   // solution 1: The entire file is read
+  // drawback: Reading and displaying the entire file is not the best practice.
   /*fs.readFile('test-file.txt', (err, data) => {
     if (err) console.log(err);
     res.end(data);
   }); */
 
   // solution 2: Use streams
-  const readable = fs.createReadStream('testt-file.txt');
+  // drawback: backpressure. This problem consists in giving
+  const readable = fs.createReadStream('test-file.txt');
   readable.on('data', chunk => {
     res.write(chunk);
   });
