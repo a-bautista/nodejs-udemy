@@ -10,9 +10,9 @@ server.on('request', (req, res) => {
   }); */
 
   // solution 2: Use streams
-  // drawback: backpressure. This problem consists in giving
-  const readable = fs.createReadStream('test-file.txt');
-  readable.on('data', chunk => {
+  // drawback: The file is read fast and the network or response cannot send each chunk that fast (backpressure).
+  /*const readable = fs.createReadStream('test-file.txt');
+  readable.on('data', chunk => { 
     res.write(chunk);
   });
   readable.on('end', () => {
@@ -22,7 +22,12 @@ server.on('request', (req, res) => {
     console.log(err);
     res.statusCode = 500; // dev tools
     res.end('File not found');
-  });
+  });*/
+
+  //solution 3:
+  const readable = fs.createReadStream('test-file.txt');
+  readable.pipe(res);
+  // readableSource.pipe(writeable)
 });
 
 server.listen(8000, '127.0.0.1', () => {
