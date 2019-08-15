@@ -33,7 +33,7 @@ const getDogPic = async () => {
   } catch (err) {
     console.log(err.message);
     // the throw error is necessary to to make the function to stop in case an error is found when retrieving the data
-    throw err.message;
+    throw err;
   }
   return '2: READY';
 };
