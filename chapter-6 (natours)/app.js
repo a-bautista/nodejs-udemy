@@ -19,7 +19,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(morgan('dev')); //login middleware
+console.log(process.env.NODE_ENV);
+if (process.env.NODE_ENV === 'development') {
+  // read the environment variables
+  app.use(morgan('dev')); // login middleware
+}
+
+app.use(express.static(`${__dirname}/public`));
 
 // ----------------------------- End of middleware sections -------------------------------
 

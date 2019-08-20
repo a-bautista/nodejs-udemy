@@ -1,9 +1,7 @@
 const express = require('express'); // create the middleware
 const userRouter = express.Router(); // middleware connected to the userRouter
 
-//const express = require('express');
 const userController = require('../controllers/userController');
-//const userRouter = express.Router();
 
 // -------------------------------------- Route handlers --------------------------------------------------
 

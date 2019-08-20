@@ -4,10 +4,14 @@ const tourRouter = express.Router(); // tourRouter is a middleware inherited fro
 
 // -------------------------------------- Route handlers --------------------------------------------------
 
+// check if the id exists
+
+tourRouter.param('id', tourController.checkID);
+
 tourRouter
   .route('/') // you go to the /api root
   .get(tourController.getAllTours)
-  .post(tourController.createNewTour);
+  .post(tourController.checkBody, tourController.createNewTour);
 
 tourRouter
   .route('/:id') // you go to the id root
