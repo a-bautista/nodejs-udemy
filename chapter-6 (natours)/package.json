@@ -4,7 +4,7 @@
   "description": "Basics of nodejs",
   "main": "app.js",
   "scripts": {
-    "start:dev": "node.exe server.js",
+    "start": "node.exe server.js",
     "start:prod": "NODE_ENV=production node.exe server.js"
   },
   "author": "",
@@ -15,6 +15,7 @@
     "eslint-config-prettier": "^6.1.0",
     "eslint-plugin-prettier": "^3.1.0",
     "express": "^4.17.1",
+    "mongoose": "^5.6.10",
     "morgan": "^1.9.1",
     "nodemon": "^1.19.1"
   }
