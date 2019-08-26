@@ -25,7 +25,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev')); // login middleware
 }
 
-app.use(express.static(`${__dirname}/public`));
+app.use(express.static(`${__dirname}/public`)); // this is necessary to make the rest of the files (html and css) available
 
 // ----------------------------- End of middleware sections -------------------------------
 

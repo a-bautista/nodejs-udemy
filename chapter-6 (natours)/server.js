@@ -21,6 +21,25 @@ mongoose
     console.log('DB connections successful!');
   });
 
+// This is how you create objects from a new class
+// An extra s will be added in Mongoose compass
+/* const testTour = new Tour({
+  name: 'The Forest Hiker Reloaded',
+  rating: 4.7,
+  price: 498
+});
+
+testTour
+  .save()
+  .then(document => {
+    console.log(document);
+  })
+  .catch(error => {
+    console.log('Error:');
+    console.log(error.message);
+  });
+  */
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`App running on port ${port}...`);
