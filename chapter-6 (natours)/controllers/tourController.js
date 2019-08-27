@@ -31,7 +31,95 @@ exports.checkBody = (req, res, next) => {
 
 exports.getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find();
+    // Build query
+    // 1A) Filtering
+
+    // 127.0.0.1:3000/api/v1/tours?duration=5&difficulty=easy
+    // Un-comment the code from below and use the link from above to see the working API
+    // console.log(req.query);
+    // const tours = await Tour.find(req.query);
+    // end of comments
+
+    const queryObj = { ...req.query }; //de-structuring each value goes into a field
+    // the fields from below need to be excluded because we don't want them to be present in the URL
+    const excludedFields = ['page', 'sort', 'limit', 'fields']; // for some reason the field sort is not being excluded
+    excludedFields.forEach(el => delete queryObj[el]);
+
+    // 1B) Advanced filtering
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+    console.log(JSON.parse(queryStr));
+
+    /*
+    If we use the await Tour then we are indicating that the rest of the code will be executed and we won't have
+    any chance to do any sorting to the tour results because the code will have reached the end, so we need to put this
+    in a variable.
+
+    const tour = await Tour.find(queryObj);
+    */
+
+    let query = Tour.find(JSON.parse(queryStr));
+
+    // 2) Sorting
+    // 127.0.0.1:3000/api/v1/tours?duration[gte]=5&difficulty=easy&price[lt]=1500
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ');
+      query = query.sort(sortBy);
+    } else {
+      // default sorting
+      query = query.sort('-ratingsAverage');
+    }
+
+    // ascending
+    // 127.0.0.1:3000/api/v1/tours?sort=price
+
+    // descending
+    // 127.0.0.1:3000/api/v1/tours?sort=-price
+
+    // 3) Field limiting
+    // 127.0.0.1:3000/api/v1/tours?fields=name,duration,difficulty,price
+
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+      query = query.select(fields);
+    } else {
+      // exclude the fields that start with the _v every time there is not any filter selected
+      query = query.select('-__v');
+    }
+
+    // 4) Pagination
+    const page = req.query.page * 1 || 1; // the || is used to set a value by default, so give by default page 1
+    const limit = req.query.limit * 1 || 100; //  limit by default 100 results
+    const skip = (page - 1) * limit;
+
+    // 127.0.0.1:3000/api/v1/tours?page=3&limit=10
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip >= numTours) throw new Error('This page doesnt exist');
+    }
+
+    // Execute query
+    const tours = await query;
+
+    /*
+    const tours = await Tour.find({
+      duration: 5,
+      difficulty: 'easy'
+    });
+    */
+
+    // the filter from below is the same as the filter from above
+    /*    
+    const tours = await Tour.find()
+      .where('duration')
+      .equals(5)
+      .where('difficulty')
+      .equals('easy');
+    */
+
+    // send response
     res.status(200).json({
       status: 'success',
       results: tours.length,
@@ -42,7 +130,7 @@ exports.getAllTours = async (req, res) => {
   } catch (error) {
     res.status(404).json({
       status: 'failed',
-      message: error
+      message: error.message
     });
   }
 };
