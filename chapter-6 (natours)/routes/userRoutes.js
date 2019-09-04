@@ -2,8 +2,12 @@ const express = require('express'); // create the middleware
 const userRouter = express.Router(); // middleware connected to the userRouter
 
 const userController = require('../controllers/userController');
+const authController = require('../controllers/authController');
 
 // -------------------------------------- Route handlers --------------------------------------------------
+
+userRouter.post('/signup', authController.signup);
+userRouter.post('/login', authController.login);
 
 userRouter
   .route('/')

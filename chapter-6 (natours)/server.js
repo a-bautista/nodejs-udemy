@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+
 dotenv.config({ path: './config.env' }); // read the variables from the config.env
 const app = require('./app');
 
@@ -41,6 +42,24 @@ testTour
   */
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`App running on port ${port}...`);
 });
+
+process.on('uncaughtException', err => {
+  console.log(err.name, err.message);
+  console.log('UNCAUGHT EXCEPTION! SHUTTING DOWN...');
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+process.on('unhandledRejection', err => {
+  console.log(err.name, err.message);
+  console.log('UNHANDLER REJECTION! SHUTTING DOWN...');
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+//console.log(x);

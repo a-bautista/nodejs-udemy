@@ -1,9 +1,17 @@
+const User = require('./../models/userModel');
+
 // ------------------------------- Functions in the route handlers ---------------------------------------
 
-exports.getAllUsers = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined!'
+exports.getAllUsers = async (req, res, next) => {
+  const users = await User.find();
+
+  // send response
+  res.status(200).json({
+    status: 'success',
+    results: users.length,
+    data: {
+      users
+    }
   });
 };
 
