@@ -17,6 +17,7 @@ tourRouter.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 
 tourRouter
   .route('/') // you go to the /api root
+  // the authoController.protect is a middleware function that is going to be executed first before getting all the tours
   .get(authController.protect, tourController.getAllTours)
   //.post(tourController.checkBody, tourController.createNewTour);
   .post(tourController.createNewTour);
@@ -25,6 +26,6 @@ tourRouter
   .route('/:id') // you go to the id root
   .get(tourController.getTour)
   .patch(tourController.updateTour)
-  .delete(tourController.deleteTour);
+  .delete(authController.protect, authController.restrictTo('admin', 'lead-guide'), tourController.deleteTour);
 
 module.exports = tourRouter;

@@ -1,5 +1,10 @@
 const express = require('express');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -7,26 +12,52 @@ const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const app = express(); // express is defined to create middlewares in node.js
 
-// ----------------------------- Middleware sections -------------------------------------
-
-app.use(express.json()); // middleware which is necessary for the POST requests
+// middleware which is necessary for the POST requests
 // In Express everything is a middleware
 
-app.use((req, res, next) => {
+// ----------------------------- Middleware sections -------------------------------------
+
+// security http headers
+app.use(helmet());
+
+/*app.use((req, res, next) => {
   console.log('Hello from the Middleware!!! :D');
   next(); // this is necessary to continue on to the next request
-});
+});*/
 
-app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString(); // a new method to the req was added
-  next();
-});
-
+// Development logging
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === 'development') {
   // read the environment variables
   app.use(morgan('dev')); // login middleware
 }
+
+// limit the number of requests for the API
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please try again in an hour'
+});
+
+app.use('/api', limiter);
+
+// Body parser, reading data from body into req.body (packages with a weight over 10kb will not be served)
+app.use(express.json({ limit: '10kb' }));
+
+// Data sanitization against NoSQL injections
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+app.use(xss());
+
+// Prevent parameter pollution
+app.use(hpp({ whitelist: ['duration', 'price', 'ratingsQuantity', 'ratingsAverage', 'maxGroupSize', 'difficulty'] }));
+
+// Test middleware
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString(); // a new method to the req was added
+  next();
+});
 
 app.use(express.static(`${__dirname}/public`)); // this is necessary to make the rest of the files (html and css) available
 
