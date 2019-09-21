@@ -1,6 +1,7 @@
 const Tour = require('./../models/tourModel'); // get the Data from the Tour model schema
 const APIFeatures = require('../utils/apiFeatures');
 const AppError = require('../utils/appError');
+const factory = require('./handlerFactory');
 
 // this middleware is going to handle the sorting of the alias
 // the middleware is something that happens between 2 events, i.e., an event before or after saving a document
@@ -11,6 +12,7 @@ exports.aliasTopTours = (req, res, next) => {
   next();
 };
 
+/*
 exports.getAllTours = async (req, res) => {
   try {
     // Execute query
@@ -37,9 +39,20 @@ exports.getAllTours = async (req, res) => {
   }
 };
 
+*/
+/*
 exports.getTour = async (req, res) => {
   try {
-    const tour = await Tour.findById(req.params.id);
+    // the .populate is already in a query middleware
+    // connect the virtual property from the Tour Model to display all the reviews for a specific tour
+    const tour = await Tour.findById(req.params.id).populate('reviews');
+    // We will use the populate method to convert the referenced data to embedded data
+    // this will be only implemented in the getTour route, not the getAllTour routes
+    //
+    //const tour = await Tour.findById(req.params.id).populate({
+    //  path: 'guides',
+    //  select: '-__v -passwordChangedAt -role'
+    //});
     // Tour.findOne({_id: req.params.id})
 
     if (!tour) {
@@ -59,7 +72,8 @@ exports.getTour = async (req, res) => {
     });
   }
 };
-
+*/
+/*
 //the created tour goes at the end of the json
 exports.createNewTour = async (req, res) => {
   // sync and await are used for handling promises
@@ -79,7 +93,8 @@ exports.createNewTour = async (req, res) => {
     });
   }
 };
-
+*/
+/*
 exports.updateTour = async (req, res) => {
   try {
     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
@@ -100,7 +115,8 @@ exports.updateTour = async (req, res) => {
     });
   }
 };
-
+*/
+/*
 exports.deleteTour = async (req, res) => {
   try {
     const tour = await Tour.findByIdAndDelete(req.params.id);
@@ -115,6 +131,13 @@ exports.deleteTour = async (req, res) => {
     });
   }
 };
+*/
+
+exports.getAllTours = factory.getAll(Tour);
+exports.getTour = factory.getOne(Tour, { path: 'reviews' }); // the factory will return the function to retrieve one tour
+exports.createTour = factory.createOne(Tour); // the factory will return the function for creating a tour
+exports.updateTour = factory.updateOne(Tour); // the factory will return the function for updating any tour
+exports.deleteTour = factory.deleteOne(Tour); // the factory will return the function for deleting any tour
 
 // aggregation pipeline stages
 exports.getTourStats = async (req, res) => {

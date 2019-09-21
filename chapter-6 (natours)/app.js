@@ -10,6 +10,7 @@ const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewRoutes');
 const app = express(); // express is defined to create middlewares in node.js
 
 // middleware which is necessary for the POST requests
@@ -72,6 +73,7 @@ app.use(express.static(`${__dirname}/public`)); // this is necessary to make the
 // mount the routers
 app.use('/api/v1/tours', tourRouter); // connect the new created middleware with the app file
 app.use('/api/v1/users', userRouter); // the /api/v1/users is the parent URL
+app.use('/api/v1/reviews', reviewRouter);
 
 // --------------------------- Error handlers ------------------------------------------
 

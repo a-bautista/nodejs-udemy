@@ -68,8 +68,9 @@ const userSchema = new mongoose.Schema(
 );
 
 // this is a middleware that is activated before throwing out all the results
-// we use a regular expression in the middleware function to indicate that we are going to apply this to every query that starts with find
-// the regular expression looks for words or strings that start with find
+// we use a regular expression in the middleware function to indicate that we are going to apply this to every query that
+// starts with find the regular expression looks for words or strings that start with find.
+// the query does not show the users who were set up to false
 userSchema.pre(/^find/, function(next) {
   this.find({ active: { $ne: false } });
   next();

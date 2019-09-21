@@ -1,3 +1,9 @@
+/*
+  How to run this file?
+
+  
+*/
+
 const fs = require('fs');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -19,7 +25,7 @@ mongoose
   });
 
 // Read json file
-const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8'));
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
 
 // Import data into db
 const importData = async () => {
