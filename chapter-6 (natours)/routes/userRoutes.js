@@ -17,6 +17,9 @@ userRouter.patch('/updateMyPassword', authController.protect, authController.upd
 userRouter.patch('/updateMe', authController.protect, userController.updateMe);
 userRouter.delete('/deleteMe', authController.protect, userController.deleteMe);
 
+userRouter.use(authController.protect); // all the routers after this point will be protected
+userRouter.use(authController.restrictTo('admin')); // all the routes after this point will require authentication
+
 userRouter
   .route('/')
   .get(userController.getAllUsers)

@@ -34,7 +34,8 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       default: 4.5,
       min: [1, 'Rating must be equal or above 1.0'],
-      max: [5, 'Rating must be equal or below 5.0']
+      max: [5, 'Rating must be equal or below 5.0'],
+      set: val => Math.round(val * 10) / 10
     },
     ratingsQuantity: {
       type: Number,
@@ -133,6 +134,12 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+// set these fields to be indexes
+/* How do you decide to make a field an index? Set the fields that are most used as indexes. */
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' }); // necessary for geolocation queries
+
 // define a virtual property for your schema to display the duration weeks
 // virtual properties cannot be used in queries
 tourSchema.virtual('durationWeeks').get(function() {
@@ -212,11 +219,11 @@ tourSchema.pre(/^find/, function(next) {
 // Aggregation middleware (will be used with the Tour.aggregate)
 // In the aggregation results, you will be displayed with all the tours but we need to hide the secret tour, so we use
 // the aggregate middleware
-tourSchema.pre('aggregate', function(next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  console.log(this.pipeline());
-  next();
-});
+//tourSchema.pre('aggregate', function(next) {
+//  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+//  console.log(this.pipeline());
+//  next();
+//});
 
 const Tour = mongoose.model('Tour', tourSchema);
 

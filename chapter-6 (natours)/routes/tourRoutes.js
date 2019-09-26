@@ -23,19 +23,31 @@ tourRouter.use('/:tourId/reviews', reviewRouter);
 tourRouter.route('/top-5-cheap').get(tourController.aliasTopTours, tourController.getAllTours);
 
 tourRouter.route('/tour-stats').get(tourController.getTourStats);
-tourRouter.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
+tourRouter
+  .route('/monthly-plan/:year')
+  .get(
+    authController.protect,
+    authController.restrictTo('admin', 'lead-guide', 'guide'),
+    tourController.getMonthlyPlan
+  );
+
+tourRouter.route('/tours-within/:distance/center/:latlng/unit/:unit').get(tourController.getToursWithin);
+//tours-distance?distance=233,center=-40
+//tours-distance/233/center/-40,45/unit/mi
+
+tourRouter.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
 
 tourRouter
   .route('/') // you go to the /api root
   // the authoController.protect is a middleware function that is going to be executed first before getting all the tours
-  .get(authController.protect, tourController.getAllTours)
+  .get(tourController.getAllTours)
   //.post(tourController.checkBody, tourController.createNewTour);
-  .post(tourController.createTour);
+  .post(authController.protect, authController.restrictTo('admin', 'lead-guide'), tourController.createTour);
 
 tourRouter
   .route('/:id') // you go to the id root
   .get(tourController.getTour)
-  .patch(tourController.updateTour)
+  .patch(authController.protect, authController.restrictTo('admin', 'lead-guide'), tourController.updateTour)
   .delete(authController.protect, authController.restrictTo('admin', 'lead-guide'), tourController.deleteTour);
 
 module.exports = tourRouter;

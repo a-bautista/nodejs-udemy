@@ -111,8 +111,10 @@ exports.getAll = Model => async (req, res, next) => {
       .sort()
       .limitFields()
       .pagination();
+    // it gives you details of the results such as the indexes (check the execution stats section of the results)
+    // What is an index? It is a feature that allows Mongo for not searching through all results but just on a few
+    //const doc = await features.query.explain();
     const doc = await features.query;
-
     // send response
     res.status(200).json({
       status: 'success',

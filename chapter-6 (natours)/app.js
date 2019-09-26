@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -11,7 +12,15 @@ const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const viewRouter = require('./routes/viewRoutes');
 const app = express(); // express is defined to create middlewares in node.js
+
+app.set('view engine', 'pug'); // pug template setup
+app.set('views', path.join(__dirname, 'views'));
+
+// serving static files
+// app.use(express.static(`${__dirname}/public`)); // this is necessary to make the rest of the files (html and css) available
+app.use(express.static(path.join(__dirname, 'public')));
 
 // middleware which is necessary for the POST requests
 // In Express everything is a middleware
@@ -60,8 +69,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(`${__dirname}/public`)); // this is necessary to make the rest of the files (html and css) available
-
 // ----------------------------- End of middleware sections -------------------------------
 
 // ----------------------------- Route Handlers -----------------------------------------
@@ -71,6 +78,7 @@ app.use(express.static(`${__dirname}/public`)); // this is necessary to make the
 // ----------------------------- Routes --------------------------------------------------
 
 // mount the routers
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter); // connect the new created middleware with the app file
 app.use('/api/v1/users', userRouter); // the /api/v1/users is the parent URL
 app.use('/api/v1/reviews', reviewRouter);

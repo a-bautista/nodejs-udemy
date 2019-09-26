@@ -14,10 +14,12 @@ reviewRouter
     reviewController.createReview
   );
 
+reviewRouter.use(authController.protect);
+
 reviewRouter
   .route('/:id')
   .get(reviewController.getReview)
-  .patch(reviewController.updateReview)
-  .delete(reviewController.deleteReview);
+  .patch(authController.restrictTo('user', 'admin'), reviewController.updateReview)
+  .delete(authController.restrictTo('user', 'admin'), reviewController.deleteReview);
 
 module.exports = reviewRouter;

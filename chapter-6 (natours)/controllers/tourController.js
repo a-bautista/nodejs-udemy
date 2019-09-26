@@ -139,7 +139,7 @@ exports.createTour = factory.createOne(Tour); // the factory will return the fun
 exports.updateTour = factory.updateOne(Tour); // the factory will return the function for updating any tour
 exports.deleteTour = factory.deleteOne(Tour); // the factory will return the function for deleting any tour
 
-// aggregation pipeline stages
+// aggregation pipeline stages for creating statistics
 exports.getTourStats = async (req, res) => {
   try {
     const stats = await Tour.aggregate([
@@ -148,7 +148,7 @@ exports.getTourStats = async (req, res) => {
       },
       {
         $group: {
-          _id: { $toUpper: '$difficulty' },
+          _id: { $toUpper: '$difficulty' }, // group the results by difficulty
           num: { $sum: 1 }, // add one for each document
           numRatings: { $sum: '$ratingsQuantity' },
           avgRating: { $avg: '$ratingsAverage' },
@@ -220,6 +220,80 @@ exports.getMonthlyPlan = async (req, res) => {
       status: 'success',
       data: {
         plan
+      }
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'fail',
+      message: error
+    });
+  }
+};
+
+exports.getToursWithin = async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1; // radius of the earth in miles and km
+
+  if (!lat || !lng) {
+    next(new AppError('Please provide latitude and longitude in the format of lat, lng.', 400));
+  }
+
+  console.log(distance, lat, lng, unit);
+  const tours = await Tour.find({ startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } } });
+
+  try {
+    res.status(200).json({
+      status: 'success',
+      results: tours.length,
+      data: {
+        data: tours
+      }
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'fail',
+      message: error
+    });
+  }
+};
+
+exports.getDistances = async (req, res, next) => {
+  const { latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+
+  const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+  if (!lat || !lng) {
+    next(new AppError('Please provide latitude and longitude in the format of lat, lng.', 400));
+  }
+
+  const distances = await Tour.aggregate([
+    {
+      /* The geoNear will not work unless you create an index called startLocations.coordinates {2dsphere} directly
+      in MongoDB compass. You cannot create this index in code because it throws an error. */
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [lng * 1, lat * 1] // convert to numbers when multiplied by 1
+        },
+        distanceField: 'distance',
+        distanceMultiplier: multiplier
+      }
+    },
+    {
+      $project: {
+        distance: 1,
+        name: 1
+      }
+    }
+  ]);
+
+  try {
+    res.status(200).json({
+      status: 'success',
+      data: {
+        data: distances
       }
     });
   } catch (error) {
