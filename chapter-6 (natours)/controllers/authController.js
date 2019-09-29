@@ -22,7 +22,7 @@ const createSendToken = (user, statusCode, res) => {
   const cookieOptions = {
     expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     //secure: true, // this indicates to use https
-    httpOnly: true
+    httpOnly: true // this indicates that the cookie will store the JSON web token in a cookie and won't be destroyed
   };
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
@@ -68,6 +68,94 @@ exports.signup = async (req, res, next) => {
   createSendToken(newUser, 201, res);
 };
 
+exports.logout = (req, res) => {
+  try {
+    res.cookie('jwt', 'loggedout', {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true
+    });
+    res.status(200).json({
+      status: 'success'
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+exports.protect = async (req, res, next) => {
+  //1) Get token and check if it's there
+  let token;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+    // this helps us to validate the users via cookie instead of the validation headers used in Postman
+  } else if (req.cookies.jwt && req.cookies.jwt !== 'loggedout') {
+    // this addresses the problem
+    token = req.cookies.jwt;
+  }
+
+  //console.log(token);
+
+  if (!token) {
+    return next(new AppError('You are not logged in! Please log in to get access.', 401));
+  }
+
+  //2) Verification of the token (has the token expired or has the data been modified?)
+  // the code from below needs to be converted into a promise because jwt.verify is synchronous and we try to avoid
+  // synchronous functions because of the nature of node.js
+  //jwt.verify(token, process.env.JWT_SECRET);
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  console.log(decoded);
+
+  //3) In case the user has been deleted but his/her token had been given, then you need to make sure that the token becomes invalid
+  const freshUser = await User.findById(decoded.id);
+  if (!freshUser) {
+    return next(new AppError('The user assigned to the token does not longer exist', 401));
+  }
+
+  //4) Check if user changed password after the token was issued
+  if (freshUser.changedPasswordAfter(decoded.iat)) {
+    //issued at (iat)
+    return next(new AppError('User recently changed the password. Please, log in again.', 401));
+  }
+
+  // Grant access to protected route
+  req.user = freshUser;
+  res.locals.user = freshUser;
+  next(); //continue with the next process, that's the purpose of the next
+};
+
+// Only for rendered pages, check if the user is logged in
+exports.isLoggedIn = async (req, res, next) => {
+  if (req.cookies.jwt) {
+    try {
+      // 1) Verify the token
+      const decoded = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
+
+      //2) In case the user has been deleted but his/her token had been given, then you need to make sure that the token becomes invalid
+      const freshUser = await User.findById(decoded.id);
+      if (!freshUser) {
+        return next();
+      }
+
+      //3) Check if user changed password after the token was issued
+      if (freshUser.changedPasswordAfter(decoded.iat)) {
+        //issued at (iat)
+        return next();
+      }
+
+      // There is a logged in user
+      // Each pug template will have access to the response.locals
+      res.locals.user = freshUser;
+      return next(); //continue with the next process, that's the purpose of the next
+    } catch (error) {
+      console.log(error);
+      return next();
+    }
+  }
+  next();
+};
+
 // We use async because we are going to use a promise to retrieve db content
 exports.login = async (req, res, next) => {
   const { email, password } = req.body; // object de-sctructuring
@@ -96,44 +184,6 @@ exports.login = async (req, res, next) => {
   // The user._id ("5d6c30aad1b8a314a4b0785d") gets a token for authentication, so he/she can navigate across the website
 
   createSendToken(user, 200, res);
-};
-
-exports.protect = async (req, res, next) => {
-  //1) Get token and check if it's there
-  let token;
-
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-
-  console.log(token);
-
-  if (!token) {
-    return next(new AppError('You are not logged in! Please log in to get access.', 401));
-  }
-
-  //2) Verification of the token (has the token expired or has the data been modified?)
-  // the code from below needs to be converted into a promise because jwt.verify is synchronous and we try to avoid
-  // synchronous functions because of the nature of node.js
-  //jwt.verify(token, process.env.JWT_SECRET);
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  console.log(decoded);
-
-  //3) In case the user has been deleted but his/her token had been given, then you need to make sure that the token becomes invalid
-  const freshUser = await User.findById(decoded.id);
-  if (!freshUser) {
-    return next(new AppError('The user assigned to the token does not longer exist', 401));
-  }
-
-  //4) Check if user changed password after the token was issued
-  if (freshUser.changedPasswordAfter(decoded.iat)) {
-    //issued at (iat)
-    return next(new AppError('User recently changed the password. Please, log in again.', 401));
-  }
-
-  // Grant access to protected route
-  req.user = freshUser;
-  next(); //continue with the next process, that's the purpose of the next
 };
 
 exports.restrictTo = (...roles) => {

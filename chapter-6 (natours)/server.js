@@ -56,10 +56,8 @@ process.on('uncaughtException', err => {
 
 process.on('unhandledRejection', err => {
   console.log(err.name, err.message);
-  console.log('UNHANDLER REJECTION! SHUTTING DOWN...');
+  console.log('UNHANDLED REJECTION! SHUTTING DOWN...');
   server.close(() => {
     process.exit(1);
   });
 });
-
-//console.log(x);
