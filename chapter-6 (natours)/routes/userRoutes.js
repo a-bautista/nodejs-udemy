@@ -1,8 +1,10 @@
 const express = require('express'); // create the middleware
 const userRouter = express.Router(); // middleware connected to the userRouter
 
+const multer = require('multer');
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
+const upload = multer({ dest: 'public/img/users' });
 
 // -------------------------------------- Route handlers --------------------------------------------------
 
@@ -13,9 +15,15 @@ userRouter.get('/logout', authController.logout);
 userRouter.post('/forgotPassword', authController.forgotPassword);
 userRouter.patch('/resetPassword/:token', authController.resetPassword);
 
-userRouter.get('/me', authController.protect, userController.getMe, userController.getUser); // when you logout you should redirect to the main page, this is a flaw that needs to be fixed
 userRouter.patch('/updateMyPassword', authController.protect, authController.updatePassword);
-userRouter.patch('/updateMe', authController.protect, userController.updateMe);
+userRouter.get('/me', authController.protect, userController.getMe, userController.getUser); // when you logout you should redirect to the main page, this is a flaw that needs to be fixed
+userRouter.patch(
+  '/updateMe',
+  userController.uploadUserPhoto,
+  userController.resizeUserPhoto, // not working
+  authController.protect,
+  userController.updateMe
+); //upload.single will hold the image file
 userRouter.delete('/deleteMe', authController.protect, userController.deleteMe);
 
 userRouter.use(authController.protect); // all the routers after this point will be protected
