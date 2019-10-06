@@ -10,7 +10,7 @@
     "watch:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js",
     "build:js": "parcel build ./public/js/index.js --out-dir ./public/js --out-file bundle.js"
   },
-  "author": "",
+  "author": "Alejandro Bautista R.",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.19.0",
@@ -48,5 +48,12 @@
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.heroku.com/warm-everglades-56466.git"
+  },
+  "keywords": [
+    "nodejs"
+  ]
 }
