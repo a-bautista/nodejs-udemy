@@ -4,7 +4,7 @@
   "description": "Basics of nodejs",
   "main": "app.js",
   "scripts": {
-    "start": "node.exe server.js",
+    "start": "node server.js",
     "start:prod": "NODE_ENV=production node.exe server.js",
     "debug": "ndb server.js",
     "watch:js": "parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js",
