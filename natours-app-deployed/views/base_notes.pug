@@ -1,0 +1,22 @@
+doctype html
+html
+    head
+        //-interpolation similar to ES6 ${ }
+        title Natours | #{tour} 
+        link(rel='stylesheet' href='css/style.css')
+        link(rel='shortcut icon' type='image/png' href='img/favicon.png')
+
+    body
+        h1=tour
+        h2=user.toUpperCase() //-this is buffered code
+        //h1 The Park Camper this code will show in the chrome dev tools
+        //-//h1 The Park Camper this comment won't show up in the chrome dev tools 
+
+
+        - const x = 9; //-unbuffered code, won't add anything to the output (results to the client)
+        h2= 2 * x //-buffered code, will be displayed in the output
+
+
+        p This is just some text 
+
+
