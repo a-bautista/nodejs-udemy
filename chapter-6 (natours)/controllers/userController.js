@@ -35,12 +35,13 @@ const upload = multer({
 exports.uploadUserPhoto = upload.single('photo');
 
 // not working cannot read property of undefined
-exports.resizeUserPhoto = (req, res, next) => {
+
+exports.resizeUserPhoto = async (req, res, next) => {
   if (!req.file) return next();
-  //console.log(req);
+
   req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
 
-  sharp(req.file.buffer)
+  await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat('jpeg')
     .jpeg({ quality: 90 })
@@ -67,7 +68,6 @@ const filterObj = (obj, ...allowedFields) => {
     
       So, we go through each key of the object to search for the allowedFields (name, email) and if there's any match then
       copy those elements in the new object.
-
   */
 
   const newObj = {}; // this is an object
@@ -134,11 +134,6 @@ exports.deleteUser = (req, res) => {
 };
 */
 
-exports.getUser = factory.getOne(User);
-exports.getAllUsers = factory.getAll(User);
-exports.updateUser = factory.updateOne(User); // do NOT update passwords with this
-exports.deleteUser = factory.deleteOne(User);
-
 exports.updateMe = async (req, res, next) => {
   // 1) Create error if the user tries to change the password data
   if (req.body.password || req.body.passwordConfirm) {
@@ -170,3 +165,8 @@ exports.deleteMe = async (req, res, next) => {
     data: null
   });
 };
+
+exports.getUser = factory.getOne(User);
+exports.getAllUsers = factory.getAll(User);
+exports.updateUser = factory.updateOne(User); // do NOT update passwords with this
+exports.deleteUser = factory.deleteOne(User);

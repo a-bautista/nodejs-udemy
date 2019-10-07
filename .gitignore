@@ -6,6 +6,7 @@
 /chapter-5/node_modules
 /chapter-6 (natours)/node_modules
 /config.env
+.cache/
 
 
 # dependencies
